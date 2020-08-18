@@ -4,7 +4,10 @@ import com.example.springdemo.model.user.UserServiceImpl;
 import com.example.springdemo.security.CustomPermissionEvaluator;
 import com.example.springdemo.security.JwtAuthenticationEntryPoint;
 import com.example.springdemo.security.JwtAuthenticationFilter;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
@@ -21,6 +24,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
@@ -91,4 +96,25 @@ public class SecurityConfig extends GlobalMethodSecurityConfiguration {
         }
 
     }
+//    @Configuration
+//    public class DatabaseConfigurer {
+//
+//        @Value("${spring.datasource.url}")
+//        private String dbUrl;
+//
+//        @Value("${spring.datasource.username}")
+//        private String username;
+//        @Value("${spring.datasource.password}")
+//        private String password;
+//
+//        @Bean
+//        public DataSource dataSource() {
+//            HikariConfig config = new HikariConfig();
+//            config.setJdbcUrl(dbUrl);
+//            config.setUsername(username);
+//            config.setPassword(password);
+//            config.set
+//            return new HikariDataSource(config);
+//        }
+//    }
 }

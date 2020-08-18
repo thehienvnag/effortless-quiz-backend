@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
-public class StudentServiceImpl implements StudentService{
+public class StudentServiceImpl implements StudentService {
 
     @Autowired
     private StudentRepository studentRepository;
@@ -29,6 +29,7 @@ public class StudentServiceImpl implements StudentService{
         return studentRepository.findById(id)
                 .orElse(null);
     }
+
     @Override
     public void save(Student student) {
         studentRepository.save(student);

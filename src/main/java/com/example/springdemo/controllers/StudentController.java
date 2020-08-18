@@ -20,6 +20,12 @@ public class StudentController {
     @Autowired
     private StudentService studentService;
 
+    @GetMapping("/hello-world")
+    @RolesAllowed("ROLE_TEACHER")
+    public ResponseEntity helloWorld(){
+        return ResponseEntity.ok("Hello World!");
+    }
+
     @GetMapping("/students")
     @RolesAllowed("ROLE_ADMIN")
     public ResponseEntity getAllStudent(@RequestParam Optional<String> q, PageableWrapper wrapper) {

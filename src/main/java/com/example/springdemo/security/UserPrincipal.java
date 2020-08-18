@@ -19,19 +19,16 @@ public class UserPrincipal implements UserDetails {
 
     private String name;
 
-    private Student student;
-
     private Collection<? extends GrantedAuthority> authorities;
 
     @JsonIgnore
     private String password;
 
-    public UserPrincipal(Integer id, String username, String name, String password, Student student, Collection<? extends GrantedAuthority> authorities) {
+    public UserPrincipal(Integer id, String username, String name, String password, String facebookId, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.username = username;
         this.name = name;
         this.password = password;
-        this.student = student;
         this.authorities = authorities;
     }
 
@@ -45,7 +42,7 @@ public class UserPrincipal implements UserDetails {
                 user.getUsername(),
                 user.getName(),
                 user.getPassword(),
-                user.getStudent(),
+                user.getFacebookId(),
                 authorities
         );
     }
@@ -73,13 +70,6 @@ public class UserPrincipal implements UserDetails {
         return id;
     }
 
-    public Student getStudent() {
-        return student;
-    }
-
-    public void setStudent(Student student) {
-        this.student = student;
-    }
 
     @JsonIgnore
     @Override

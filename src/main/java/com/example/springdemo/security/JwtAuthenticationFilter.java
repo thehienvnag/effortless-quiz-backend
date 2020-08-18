@@ -1,5 +1,6 @@
 package com.example.springdemo.security;
 
+import com.example.springdemo.model.user.User;
 import com.example.springdemo.model.user.UserServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,17 +44,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwtToken = getJwtFromToken(httpServletRequest);
 
             if (StringUtils.hasText(jwtToken) && tokenProvider.validateToken(jwtToken)) {
-                Integer userId = tokenProvider.getUserIdFromJWT(jwtToken);
+                User user = tokenProvider.getUserObjFromJWT(jwtToken);
 
-                UserDetails userDetails = userService.findOne(userId);
+                UserPrincipal userPrincipal = UserPrincipal.create(user);
                 SecurityContext securityContext = SecurityContextHolder.getContext();
                 Authentication auth = securityContext.getAuthentication();
 
-                if(auth == null || auth instanceof AnonymousAuthenticationToken){
+                if (auth == null || auth instanceof AnonymousAuthenticationToken) {
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userDetails,
+                            userPrincipal,
                             null,
-                            userDetails.getAuthorities()
+                            userPrincipal.getAuthorities()
                     );
                     authentication.setDetails(
                             new WebAuthenticationDetailsSource()

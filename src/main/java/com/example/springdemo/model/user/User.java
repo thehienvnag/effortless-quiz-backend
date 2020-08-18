@@ -1,105 +1,60 @@
 package com.example.springdemo.model.user;
 
+import com.example.springdemo.model.quizes.Quizes;
 import com.example.springdemo.model.role.Role;
 import com.example.springdemo.model.student.Student;
 import com.example.springdemo.model.userrole.UserRole;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Id", insertable = false, nullable = false)
+    @Column(name = "id", insertable = false, nullable = false)
     private Integer id;
 
-    @Column(name = "Username", nullable = false)
+    @Column(name = "username", nullable = true)
     private String username;
 
-    @Column(name = "Password", nullable = false)
+    @Column(name = "password", nullable = true)
     private String password;
 
-    @Column(name = "Name", nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<UserRole> userRoles;
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Quizes> quizList;
 
-    @OneToOne(mappedBy = "user")
-    private Student student;
+    @Column(name = "facebookId", nullable = true)
+    private String facebookId;
 
-    public User() {
-    }
+    @Column(name = "refreshToken", nullable = true)
+    private String refreshToken;
 
-    public User(String username, String password, String name) {
+
+    public User(String username, String password, String name, String roleName) {
         this.username = username;
         this.password = password;
         this.name = name;
-    }
-
-    public List<UserRole> getUserRoles() {
-        return userRoles;
-    }
-
-    public void setUserRoles(List<UserRole> userRoles) {
-        this.userRoles = userRoles;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-
-    public Student getStudent() {
-        return student;
-    }
-
-    public void setStudent(Student student) {
-        this.student = student;
-    }
-
-    @JsonIgnore
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String toString() {
-      return "User{id=" + id + 
-        ", username=" + username + 
-        ", password=" + password + 
-        ", name=" + name + 
-        "}";
+        userRoles = new ArrayList<>();
+        userRoles.add(new UserRole(this, new Role(2, roleName)));
     }
 }

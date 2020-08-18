@@ -1,10 +1,14 @@
 package com.example.springdemo.model.role;
 
 import com.example.springdemo.model.userrole.UserRole;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
+@Data @AllArgsConstructor @NoArgsConstructor
 @Table(name = "role")
 @Entity
 public class Role implements Serializable {
@@ -21,25 +25,12 @@ public class Role implements Serializable {
     @OneToOne(mappedBy = "role", fetch = FetchType.LAZY)
     private UserRole userRole;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
+    public Role(Integer id, String name) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
         this.name = name;
     }
 
-    public String toString() {
-      return "Role{id=" + id + 
-        ", name=" + name + 
-        "}";
+    public Role(String name) {
+        this.name = name;
     }
 }
