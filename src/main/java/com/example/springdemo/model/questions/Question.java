@@ -47,9 +47,9 @@ public class Question implements Serializable {
     @JoinColumn(name = "quizes_id", referencedColumnName = "id")
     private Quizes quiz;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "question_type_id", referencedColumnName = "id")
-    private QuestionType questionType;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "question_type_id", referencedColumnName = "id")
+//    private QuestionType questionType;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "question")
     private List<Answer> answerList;
