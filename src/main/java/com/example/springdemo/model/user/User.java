@@ -1,6 +1,6 @@
 package com.example.springdemo.model.user;
 
-import com.example.springdemo.model.quizes.Quizes;
+//import com.example.springdemo.model.quizes.Quizes;
 import com.example.springdemo.model.role.Role;
 import com.example.springdemo.model.student.Student;
 import com.example.springdemo.model.userrole.UserRole;
