@@ -40,8 +40,8 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<UserRole> userRoles;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<Quizes> quizList;
+//    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+//    private List<Quizes> quizList;
 
     @Column(name = "facebookId", nullable = true)
     private String facebookId;
