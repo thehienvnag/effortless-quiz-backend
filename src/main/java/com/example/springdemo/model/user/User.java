@@ -1,10 +1,12 @@
 package com.example.springdemo.model.user;
 
-//import com.example.springdemo.model.quizes.Quizes;
+//import com.example.springdemo.model.quizes.Quizzes;
+import com.example.springdemo.model.quizes.Quizzes;
 import com.example.springdemo.model.role.Role;
 import com.example.springdemo.model.student.Student;
 import com.example.springdemo.model.userrole.UserRole;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,9 +30,11 @@ public class User implements Serializable {
     @Column(name = "id", insertable = false, nullable = false)
     private Integer id;
 
+    @JsonProperty
     @Column(name = "username", nullable = true)
     private String username;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "password", nullable = true)
     private String password;
 
@@ -40,21 +44,32 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<UserRole> userRoles;
 
-//    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-//    private List<Quizes> quizList;
-
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "facebookId", nullable = true)
     private String facebookId;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "refreshToken", nullable = true)
     private String refreshToken;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Quizzes> quizzesList;
 
-    public User(String username, String password, String name, String roleName) {
+    public User(String username, String password, String name, String roleIdStr) {
         this.username = username;
         this.password = password;
         this.name = name;
         userRoles = new ArrayList<>();
-        userRoles.add(new UserRole(this, new Role(2, roleName)));
+        Integer roleId = Integer.parseInt(roleIdStr);
+
+        userRoles.add(new UserRole(this, new Role(roleId)));
+    }
+
+    public User(String name, String facebookId) {
+        this.name = name;
+        this.facebookId = facebookId;
+        userRoles = new ArrayList<>();
+
     }
 }

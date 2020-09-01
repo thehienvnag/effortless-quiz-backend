@@ -37,6 +37,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<User> findUserByFacebookId(String facebookId) {
+        return userRepository.findByFacebookId(facebookId);
+    }
+
+    @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(s).orElseThrow(() ->
                 new UsernameNotFoundException("User not found with username: " + s)

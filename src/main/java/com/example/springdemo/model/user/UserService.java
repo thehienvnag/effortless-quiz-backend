@@ -9,4 +9,5 @@ public interface UserService extends UserDetailsService {
     public UserDetails findOne(Integer id);
     public Optional<User> findUser(Integer id);
     public void saveUser(User user);
+    public Optional<User> findUserByFacebookId(String facebookId);
 }

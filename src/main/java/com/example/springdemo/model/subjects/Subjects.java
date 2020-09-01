@@ -1,9 +1,12 @@
 package com.example.springdemo.model.subjects;
 
+import com.example.springdemo.model.quizes.Quizzes;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @Table(name = "subjects")
@@ -21,6 +24,10 @@ public class Subjects implements Serializable {
 
     @Column(name = "code", nullable = false)
     private String code;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @OneToMany(mappedBy = "subjects")
+    private List<Quizzes> quizzesList;
 
     
 }

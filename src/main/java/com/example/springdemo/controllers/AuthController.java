@@ -1,11 +1,11 @@
 package com.example.springdemo.controllers;
 
-import com.example.springdemo.model.requests.LoginRequest;
-import com.example.springdemo.model.requests.RefreshRequest;
-import com.example.springdemo.model.requests.RegisterRequest;
+import com.example.springdemo.model.requests.*;
 import com.example.springdemo.model.responses.JwtAuthenticationResponse;
+import com.example.springdemo.model.role.Role;
 import com.example.springdemo.model.user.User;
 import com.example.springdemo.model.user.UserServiceImpl;
+import com.example.springdemo.model.userrole.UserRole;
 import com.example.springdemo.security.JwtTokenProvider;
 import com.example.springdemo.security.UserPrincipal;
 import org.slf4j.Logger;
@@ -21,10 +21,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:8081")
+@CrossOrigin(origins = {"http://localhost:8081"})
 public class AuthController {
 
     Logger logger = LoggerFactory.getLogger(AuthController.class);
@@ -55,14 +57,31 @@ public class AuthController {
         String refreshToken = tokenProvider.generateRefreshToken(auth);
         Integer userId = ((UserPrincipal) auth.getPrincipal()).getId();
         User userFound = userService.findUser(userId).orElse(null);
-        if(userFound == null){
+        if (userFound == null) {
             return new ResponseEntity("Incorrect username or password!!", HttpStatus.UNAUTHORIZED);
         }
         userFound.setRefreshToken(refreshToken);
         userService.saveUser(userFound);
         return ResponseEntity.ok(
-                new JwtAuthenticationResponse(accessToken, refreshToken, (UserPrincipal) auth.getPrincipal())
+                new JwtAuthenticationResponse(accessToken, refreshToken, userFound)
         );
+    }
+
+    @PostMapping("/login-with-facebook")
+    public ResponseEntity loginWithFacebook(@Valid @RequestBody LoginWithFBRequest loginRequest) {
+        String fbID = loginRequest.getId();
+        String name = loginRequest.getName();
+
+        User user = userService.findUserByFacebookId(fbID).orElse(null);
+        if (user == null) {
+            user = new User(name, fbID);
+        } else {
+            if (user.getFacebookId() == null) {
+                user.setFacebookId(fbID);
+            }
+        }
+        userService.saveUser(user);
+        return ResponseEntity.ok(new JwtAuthenticationResponse(null, null, user));
     }
 
     @PostMapping("/refresh")
@@ -71,20 +90,20 @@ public class AuthController {
 
         User userFound = userService.findUser(userId).orElse(null);
 
-        if(userFound == null){
-            return ResponseEntity.badRequest().body("Invalid r");
+        if (userFound == null) {
+            return ResponseEntity.badRequest().body("Invalid Request!!");
         }
-        if(userFound.getRefreshToken() != null && userFound.getRefreshToken().equals(refreshRequest.getRefreshToken())){
-            userFound.setRefreshToken(refreshRequest.getRefreshToken());
-            userService.saveUser(userFound);
-            userFound.setPassword(null);
+        if (userFound.getRefreshToken() != null && userFound.getRefreshToken().equals(refreshRequest.getRefreshToken())) {
             String accessToken = tokenProvider.generateAccessToken(userFound);
             String refreshToken = tokenProvider.generateRefreshToken(userId.toString());
+            userFound.setRefreshToken(refreshToken);
+            userService.saveUser(userFound);
+            userFound.setPassword(null);
+
             return ResponseEntity.ok(
-                    new JwtAuthenticationResponse(accessToken, refreshToken, UserPrincipal.create(userFound))
+                    new JwtAuthenticationResponse(accessToken, refreshToken, userFound)
             );
         }
-
         return new ResponseEntity("Try login again!", HttpStatus.UNAUTHORIZED);
     }
 
@@ -96,8 +115,8 @@ public class AuthController {
                 registerRequest.getPassword()
         );
         String name = registerRequest.getName();
-        String roleName = registerRequest.getRoleName();
-        User user = new User(username, password, name, roleName);
+        String roleId = registerRequest.getRoleId();
+        User user = new User(username, password, name, roleId);
 
         try {
             userService.saveUser(user);
@@ -105,9 +124,29 @@ public class AuthController {
             String msg = e.getMessage();
             logger.error(msg);
             if (msg.contains("unique_user_Username")) {
-                return ResponseEntity.ok("Username already exists!");
+                return ResponseEntity.badRequest().body("Username already exists!");
             }
         }
         return ResponseEntity.ok(user);
+    }
+    @PutMapping("/users/{id}")
+    public ResponseEntity updateRoleUser(@PathVariable Integer id, @RequestBody UpdateRoleRequest updateRequest) {
+
+        User user = userService.findUser(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User id specified does not exist!");
+        }
+        if (user.getUserRoles().size() > 0) {
+            return ResponseEntity.badRequest().body("Invalid request!");
+        }
+        List<UserRole> userRoleList = new ArrayList<>();
+        userRoleList.add(new UserRole(user, new Role(Integer.parseInt(updateRequest.getRoleId()))));
+        user.setUserRoles(userRoleList);
+        String accessToken = tokenProvider.generateAccessToken(user);
+        String refreshToken = tokenProvider.generateRefreshToken(user.getId().toString());
+        user.setRefreshToken(refreshToken);
+        userService.saveUser(user);
+
+        return ResponseEntity.ok(new JwtAuthenticationResponse(accessToken, refreshToken, user));
     }
 }

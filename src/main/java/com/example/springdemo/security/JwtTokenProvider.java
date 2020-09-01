@@ -51,7 +51,6 @@ public class JwtTokenProvider {
     public String generateAccessToken(User user) {
         String roleName = user.getUserRoles().get(0).getRole().getName();
         Map<String, Object> claims = new HashMap<>();
-        claims.put("username", user.getUsername());
         claims.put("name", user.getName());
         claims.put("roleName", roleName);
         return generateToken(user.getId().toString(), accessTokenExpirationInMs, claims);
@@ -60,12 +59,12 @@ public class JwtTokenProvider {
 
     public String generateAccessToken(Authentication authentication) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        String username = userPrincipal.getUsername();
-        String name = userPrincipal.getName();
+//        String username = userPrincipal.getUsername();
+//        String name = userPrincipal.getName();
         String roleName = userPrincipal.getAuthorities().iterator().next().toString();
         Map<String, Object> claims = new HashMap<>();
-        claims.put("username", username);
-        claims.put("name", name);
+//        claims.put("username", username);
+//        claims.put("name", name);
         claims.put("roleName", roleName);
         return generateToken(userPrincipal.getId().toString(), accessTokenExpirationInMs, claims);
     }
@@ -85,17 +84,18 @@ public class JwtTokenProvider {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        Integer id = Integer.parseInt(claims.getSubject());
-        String username = claims.get("username").toString();
-        String name = claims.get("name").toString();
+//        Integer id = Integer.parseInt(claims.getSubject());
+//        String username = claims.get("username").toString();
+//        String name = claims.get("name").toString();
         String roleName = claims.get("roleName").toString();
 
         User user = new User();
-        user.setId(id);
-        user.setUsername(username);
-        user.setName(name);
+        //user.setId(id);
+        //user.setUsername(username);
+        //user.setName(name);
         List<UserRole> userRoles = new ArrayList<>();
         userRoles.add(new UserRole(user, new Role(roleName)));
+        user.setUserRoles(userRoles);
         return user;
     }
 

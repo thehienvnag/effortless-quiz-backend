@@ -23,10 +23,12 @@ public class RegisterRequest implements Serializable {
     private String password;
 
     @NotBlank
-    @Pattern(regexp = "^[\\w ]{6,30}$")
+    @Pattern(regexp = "^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂẾưăạảấầẩẫậắằẳẵặẹẻẽềềểếỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ\\s\\W|_]{6,30}$")
     private String name;
 
     @NotBlank
-    @Pattern(regexp = "ROLE_STUDENT|ROLE_TEACHER")
-    private String roleName;
+    @Pattern(regexp = "1|2")
+    private String roleId;
+
+
 }

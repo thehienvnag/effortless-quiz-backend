@@ -46,7 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(jwtToken) && tokenProvider.validateToken(jwtToken)) {
                 User user = tokenProvider.getUserObjFromJWT(jwtToken);
 
-                UserDetails userPrincipal = userService.findOne(user.getId());
+                UserDetails userPrincipal = UserPrincipal.create(user);
                 SecurityContext securityContext = SecurityContextHolder.getContext();
                 Authentication auth = securityContext.getAuthentication();
 
