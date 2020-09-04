@@ -3,7 +3,12 @@ package com.example.springdemo.config;
 import com.example.springdemo.model.user.UserServiceImpl;
 import com.example.springdemo.security.JwtAuthenticationEntryPoint;
 import com.example.springdemo.security.JwtAuthenticationFilter;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,12 +24,32 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private UserServiceImpl userService;
+
+    @Value("${azure.storage.ConnectionString}")
+    private String azureStorageConnectionString;
+
+    @Value("${azure.storage.container.name}")
+    private String azureContainerName;
+
+    @Bean
+    public CloudBlobClient cloudBlobClient() throws URISyntaxException, StorageException, InvalidKeyException {
+        CloudStorageAccount storageAccount = CloudStorageAccount.parse(azureStorageConnectionString);
+        return storageAccount.createCloudBlobClient();
+    }
+
+    @Bean
+    public CloudBlobContainer testBlobContainer() throws URISyntaxException, StorageException, InvalidKeyException {
+        return cloudBlobClient().getContainerReference(azureContainerName);
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -64,6 +89,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/auth/**").permitAll()
                 .antMatchers("/api/subjects").permitAll()
                 .antMatchers("/api/pictures/{fileName:.+}").permitAll()
+//                .antMatchers("/api/uploadFile").permitAll()
                 .anyRequest()
                 .authenticated();
 

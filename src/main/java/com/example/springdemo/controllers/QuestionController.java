@@ -26,6 +26,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -51,8 +52,16 @@ public class QuestionController {
     @Autowired
     private QuizzesService quizzesService;
 
-    @RolesAllowed("ROLE_TEACHER")
+
     @PostMapping("/uploadFile")
+    public ResponseEntity uploadFile(@RequestParam("file") MultipartFile file){
+        URI uri = fileService.uploadFileAzure(file);
+        return ResponseEntity.ok(uri);
+    }
+
+    /*
+    @PostMapping("/uploadFile")
+    @RolesAllowed("ROLE_TEACHER")
     public ResponseEntity uploadFile(@RequestParam("file") MultipartFile file) {
 
         String imageLink = fileService.uploadFile(file);
@@ -62,7 +71,7 @@ public class QuestionController {
                 .toUriString();
 
         return ResponseEntity.ok(fileDownloadUri);
-    }
+    }*/
 
     @GetMapping("/pictures/{fileName:.+}")
     public ResponseEntity getPicture(@PathVariable String fileName, HttpServletRequest request) {
@@ -92,14 +101,14 @@ public class QuestionController {
             Authentication authentication
     ) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        if(userPrincipal.getId() != userId){
+        if (userPrincipal.getId() != userId) {
             return new ResponseEntity("You are not authorized to access this resource!", HttpStatus.FORBIDDEN);
         }
         StagingQuizzes addedStagingQuizzes = stagingQuizzesService.findByQuizesIdAndStatusIdAndUserId(id, 3, userId).orElse(null);
         if (addedStagingQuizzes != null) {
             List<QuestionInQuiz> questionInQuizToRemove = new ArrayList<>();
             for (QuestionInQuiz questionInQuiz : addedStagingQuizzes.getQuestionInQuizList()) {
-                if(questionInQuiz.getCountStudentQuestionJoined() > 0){
+                if (questionInQuiz.getCountStudentQuestionJoined() > 0) {
                     questionInQuiz.setStatusId(2);
                 } else {
                     questionInQuiz.setStagingQuizzes(null);
@@ -107,8 +116,8 @@ public class QuestionController {
                 }
             }
             List<Question> questionsToRemove = new ArrayList<>();
-            for (QuestionInQuiz questionInQuiz: questionInQuizToRemove) {
-                if(questionInQuiz.getCountQuestionInAnotherQuiz() == 0){
+            for (QuestionInQuiz questionInQuiz : questionInQuizToRemove) {
+                if (questionInQuiz.getCountQuestionInAnotherQuiz() == 0) {
                     questionsToRemove.add(questionInQuiz.getQuestion());
                 }
                 addedStagingQuizzes.getQuestionInQuizList().remove(questionInQuiz);
@@ -121,7 +130,7 @@ public class QuestionController {
                 addedStagingQuizzes.getQuestionInQuizList().add(new QuestionInQuiz(addedStagingQuizzes, question));
             }
             questionService.saveAll(questionRequest.getQuestions());
-            for (Question question: questionsToRemove) {
+            for (Question question : questionsToRemove) {
                 questionService.delete(question);
             }
             stagingQuizzesService.save(addedStagingQuizzes);

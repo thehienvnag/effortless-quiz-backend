@@ -2,6 +2,10 @@ package com.example.springdemo.service;
 
 import com.example.springdemo.exceptions.FileNotFoundException;
 import com.example.springdemo.exceptions.FileStorageException;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import org.springframework.core.io.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.UrlResource;
@@ -13,6 +17,8 @@ import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,6 +29,29 @@ import java.util.UUID;
 public class FileService {
     @Autowired
     private ServletContext servletContext;
+
+    @Autowired
+    CloudBlobContainer cloudBlobContainer;
+    public URI uploadFileAzure(MultipartFile multipartFile){
+        URI uri = null;
+        CloudBlockBlob blob = null;
+        try {
+
+            String originalFilename = multipartFile.getOriginalFilename();
+            String extension = multipartFile.getOriginalFilename().substring(originalFilename.lastIndexOf("."));
+            String fileName = UUID.randomUUID().toString().substring(0, 21) + extension;
+            blob = cloudBlobContainer.getBlockBlobReference(fileName);
+            blob.upload(multipartFile.getInputStream(), -1);
+            uri = blob.getUri();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        } catch (StorageException e) {
+            e.printStackTrace();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+        return uri;
+    }
 
     public String uploadFile(MultipartFile file){
         String uploadDir = servletContext.getRealPath("resources" + File.separator + "uploads");
