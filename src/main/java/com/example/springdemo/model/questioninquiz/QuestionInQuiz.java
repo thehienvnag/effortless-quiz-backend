@@ -6,6 +6,7 @@ import com.example.springdemo.model.studentquestion.StudentQuestion;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -42,6 +43,16 @@ public class QuestionInQuiz implements Serializable {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "questionInQuiz")
     private List<StudentQuestion> studentQuestions;
 
+    @Formula("(SELECT COUNT(sq.id) FROM student_question sq WHERE sq.question_in_quiz_id = id)")
+    private Integer countStudentQuestionJoined;
+
+    @Formula("(SELECT COUNT(qq.id) FROM question_in_quiz qq " +
+            "WHERE qq.question_id = question_id AND qq.staging_quizzes_id <> staging_quizzes_id)")
+    private Integer countQuestionInAnotherQuiz;
+
+    @Column(name = "status_id")
+    private Integer statusId;
+
     public QuestionInQuiz(){
 
     }
@@ -49,6 +60,7 @@ public class QuestionInQuiz implements Serializable {
     public QuestionInQuiz(StagingQuizzes stagingQuizzes, Question question) {
         this.stagingQuizzes = stagingQuizzes;
         this.question = question;
+        this.statusId = 1;
     }
 
 

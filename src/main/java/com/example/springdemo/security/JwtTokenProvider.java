@@ -48,6 +48,12 @@ public class JwtTokenProvider {
         return jwtBuilder.signWith(getSecretKey()).compact();
     }
 
+    public String generateAccessToken(Integer id, String name, String roleName) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("name", name);
+        claims.put("roleName", roleName);
+        return generateToken(id.toString(), accessTokenExpirationInMs, claims);
+    }
     public String generateAccessToken(User user) {
         String roleName = user.getUserRoles().get(0).getRole().getName();
         Map<String, Object> claims = new HashMap<>();
@@ -84,13 +90,13 @@ public class JwtTokenProvider {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-//        Integer id = Integer.parseInt(claims.getSubject());
+        Integer id = Integer.parseInt(claims.getSubject());
 //        String username = claims.get("username").toString();
 //        String name = claims.get("name").toString();
         String roleName = claims.get("roleName").toString();
 
         User user = new User();
-        //user.setId(id);
+        user.setId(id);
         //user.setUsername(username);
         //user.setName(name);
         List<UserRole> userRoles = new ArrayList<>();

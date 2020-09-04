@@ -3,7 +3,6 @@ package com.example.springdemo.model.user;
 //import com.example.springdemo.model.quizes.Quizzes;
 import com.example.springdemo.model.quizes.Quizzes;
 import com.example.springdemo.model.role.Role;
-import com.example.springdemo.model.student.Student;
 import com.example.springdemo.model.userrole.UserRole;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -62,14 +61,11 @@ public class User implements Serializable {
         this.name = name;
         userRoles = new ArrayList<>();
         Integer roleId = Integer.parseInt(roleIdStr);
-
         userRoles.add(new UserRole(this, new Role(roleId)));
     }
 
     public User(String name, String facebookId) {
         this.name = name;
         this.facebookId = facebookId;
-        userRoles = new ArrayList<>();
-
     }
 }

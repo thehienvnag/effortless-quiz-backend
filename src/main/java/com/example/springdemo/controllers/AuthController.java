@@ -6,6 +6,7 @@ import com.example.springdemo.model.role.Role;
 import com.example.springdemo.model.user.User;
 import com.example.springdemo.model.user.UserServiceImpl;
 import com.example.springdemo.model.userrole.UserRole;
+import com.example.springdemo.model.userrole.UserRoleService;
 import com.example.springdemo.security.JwtTokenProvider;
 import com.example.springdemo.security.UserPrincipal;
 import org.slf4j.Logger;
@@ -26,8 +27,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
-//@CrossOrigin(origins = "http://localhost:8081")
-@CrossOrigin(origins = "https://effortless-quiz.herokuapp.com")
+@CrossOrigin(origins = "http://localhost:8081")
+//@CrossOrigin(origins = "https://effortless-quiz.herokuapp.com")
 public class AuthController {
 
     Logger logger = LoggerFactory.getLogger(AuthController.class);
@@ -37,6 +38,9 @@ public class AuthController {
 
     @Autowired
     private UserServiceImpl userService;
+
+    @Autowired
+    private UserRoleService userRoleService;
 
     @Autowired
     private JwtTokenProvider tokenProvider;
@@ -76,12 +80,16 @@ public class AuthController {
         User user = userService.findUserByFacebookId(fbID).orElse(null);
         if (user == null) {
             user = new User(name, fbID);
-        } else {
-            if (user.getFacebookId() == null) {
-                user.setFacebookId(fbID);
-            }
+            userService.saveUser(user);
         }
-        userService.saveUser(user);
+
+
+        if (user.getUserRoles() != null && user.getUserRoles().size() > 0) {
+            userService.saveUser(user);
+            String accessToken = tokenProvider.generateAccessToken(user);
+            String refreshToken = tokenProvider.generateRefreshToken(user.getId().toString());
+            return ResponseEntity.ok(new JwtAuthenticationResponse(accessToken, refreshToken, user));
+        }
         return ResponseEntity.ok(new JwtAuthenticationResponse(null, null, user));
     }
 
@@ -130,6 +138,7 @@ public class AuthController {
         }
         return ResponseEntity.ok(user);
     }
+
     @PutMapping("/users/{id}")
     public ResponseEntity updateRoleUser(@PathVariable Integer id, @RequestBody UpdateRoleRequest updateRequest) {
 
@@ -137,17 +146,19 @@ public class AuthController {
         if (user == null) {
             return ResponseEntity.badRequest().body("User id specified does not exist!");
         }
-        if (user.getUserRoles().size() > 0) {
+        if(user.getUserRoles().size() > 0){
             return ResponseEntity.badRequest().body("Invalid request!");
         }
-        List<UserRole> userRoleList = new ArrayList<>();
-        userRoleList.add(new UserRole(user, new Role(Integer.parseInt(updateRequest.getRoleId()))));
-        user.setUserRoles(userRoleList);
-        String accessToken = tokenProvider.generateAccessToken(user);
+        List<UserRole> userRoles = new ArrayList<>();
+        Role role = new Role(Integer.parseInt(updateRequest.getRoleId()));
+        UserRole userRole = new UserRole(user, role);
+        String roleName = role.getName();
+        userRoles.add(userRole);
+        user.setUserRoles(userRoles);
+        String accessToken = tokenProvider.generateAccessToken(user.getId(), user.getName(), roleName);
         String refreshToken = tokenProvider.generateRefreshToken(user.getId().toString());
         user.setRefreshToken(refreshToken);
         userService.saveUser(user);
-
         return ResponseEntity.ok(new JwtAuthenticationResponse(accessToken, refreshToken, user));
     }
 }

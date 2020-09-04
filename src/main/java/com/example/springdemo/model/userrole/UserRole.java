@@ -28,12 +28,12 @@ public class UserRole implements Serializable {
 
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne( fetch = FetchType.LAZY)
     @JoinColumn(name = "userid", referencedColumnName = "Id")
     private User user;
 
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "roleid", referencedColumnName = "Id")
     private Role role;
 

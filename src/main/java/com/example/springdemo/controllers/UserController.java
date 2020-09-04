@@ -6,6 +6,7 @@ import com.example.springdemo.model.role.Role;
 import com.example.springdemo.model.user.User;
 import com.example.springdemo.model.user.UserServiceImpl;
 import com.example.springdemo.model.userrole.UserRole;
+import com.example.springdemo.security.JwtTokenProvider;
 import com.example.springdemo.security.UserPrincipal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +24,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-//@CrossOrigin(origins = "http://localhost:8081")
-@CrossOrigin(origins = "https://effortless-quiz.herokuapp.com")
+@CrossOrigin(origins = "http://localhost:8081")
+//@CrossOrigin(origins = "https://effortless-quiz.herokuapp.com")
 public class UserController {
     Logger logger = LoggerFactory.getLogger(AuthController.class);
 
@@ -34,13 +35,20 @@ public class UserController {
     @Autowired
     private UserServiceImpl userService;
 
+    @Autowired
+    private JwtTokenProvider tokenProvider;
+
     @GetMapping("/users/{id}")
     public ResponseEntity getUserInfo(@PathVariable Integer id) {
         User user = userService.findUser(id).orElse(null);
         if(user == null){
             return new ResponseEntity("User does not exist", HttpStatus.NO_CONTENT);
         }
-        return ResponseEntity.ok(user);
+        String accessToken = tokenProvider.generateAccessToken(user);
+        String refreshToken = tokenProvider.generateRefreshToken(user.getId().toString());
+        user.setRefreshToken(refreshToken);
+        userService.saveUser(user);
+        return ResponseEntity.ok(new JwtAuthenticationResponse(accessToken,refreshToken,user));
     }
 
 

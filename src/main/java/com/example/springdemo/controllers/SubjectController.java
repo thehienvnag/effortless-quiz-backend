@@ -20,8 +20,8 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
-//@CrossOrigin(origins = "http://localhost:8081")
-@CrossOrigin(origins = "https://effortless-quiz.herokuapp.com")
+@CrossOrigin(origins = "http://localhost:8081")
+//@CrossOrigin(origins = "https://effortless-quiz.herokuapp.com")
 public class SubjectController {
     @Autowired
     private SubjectService subjectService;

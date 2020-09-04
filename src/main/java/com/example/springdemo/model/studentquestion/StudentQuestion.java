@@ -57,6 +57,14 @@ public class StudentQuestion {
             "WHERE st.id = (SELECT sa.staging_quizzes_id FROM student_attempt sa WHERE sa.id = student_attempt_id))")
     private Integer duration;
 
+    @Formula("(SELECT sa.users_id FROM student_attempt sa " +
+            "WHERE sa.id = student_attempt_id" +
+            ")")
+    private Integer userId;
+
+    @Column(name = "point_earned")
+    private Double pointEarned;
+
     public StudentQuestion(StudentAttempt studentAttempt, QuestionInQuiz questionInQuiz) {
         this.studentAttempt = studentAttempt;
         this.questionInQuiz = questionInQuiz;

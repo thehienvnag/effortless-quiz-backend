@@ -5,6 +5,7 @@ import com.example.springdemo.model.questioninquiz.QuestionInQuiz;
 import com.example.springdemo.model.quizes.Quizzes;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -38,6 +39,9 @@ public class Question implements Serializable {
 
     @Column(name = "status_id", nullable = false)
     private Integer statusId;
+
+    @Formula("(SELECT COUNT(a.id) FROM answer a WHERE a.question_id = id AND a.correct = true)")
+    private Integer countCorrectAnswer;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToOne(fetch = FetchType.LAZY)

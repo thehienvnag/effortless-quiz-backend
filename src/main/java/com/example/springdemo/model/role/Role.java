@@ -40,6 +40,8 @@ public class Role implements Serializable {
             name = "ROLE_TEACHER";
         } else if (id == 2) {
             name = "ROLE_STUDENT";
+        } else if(id == 3){
+            name = "ROLE_NOT_CONFIRMED";
         }
     }
 

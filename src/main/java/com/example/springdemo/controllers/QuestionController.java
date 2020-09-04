@@ -10,12 +10,15 @@ import com.example.springdemo.model.quizes.QuizzesService;
 import com.example.springdemo.model.requests.QuestionRequest;
 import com.example.springdemo.model.stagingquizzes.StagingQuizzes;
 import com.example.springdemo.model.stagingquizzes.StagingQuizzesService;
+import com.example.springdemo.security.UserPrincipal;
 import com.example.springdemo.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -28,8 +31,8 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
-//@CrossOrigin(origins = "http://localhost:8081")
-@CrossOrigin(origins = "https://effortless-quiz.herokuapp.com")
+@CrossOrigin(origins = "http://localhost:8081")
+//@CrossOrigin(origins = "https://effortless-quiz.herokuapp.com")
 public class QuestionController {
 
     @Autowired
@@ -79,16 +82,35 @@ public class QuestionController {
     }
 
     @PostMapping("/users/{userId}/quizzes/{id}/questions")
-    public ResponseEntity saveQuestions(@PathVariable Integer id, @RequestBody QuestionRequest questionRequest) {
-
-        StagingQuizzes addedStagingQuizzes = stagingQuizzesService.findByQuizesIdAndStatusId(id, 3).orElse(null);
-
+    public ResponseEntity saveQuestions(
+            @PathVariable Integer userId,
+            @PathVariable Integer id,
+            @RequestBody QuestionRequest questionRequest,
+            Authentication authentication
+    ) {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        if(userPrincipal.getId() != userId){
+            return new ResponseEntity("You are not authorized to access this resource!", HttpStatus.FORBIDDEN);
+        }
+        StagingQuizzes addedStagingQuizzes = stagingQuizzesService.findByQuizesIdAndStatusIdAndUserId(id, 3, userId).orElse(null);
         if (addedStagingQuizzes != null) {
-            for (QuestionInQuiz questionInQuiz: addedStagingQuizzes.getQuestionInQuizList()) {
-                questionInQuiz.setStagingQuizzes(null);
-                questionInQuiz.setQuestion(null);
+            List<QuestionInQuiz> questionInQuizToRemove = new ArrayList<>();
+            for (QuestionInQuiz questionInQuiz : addedStagingQuizzes.getQuestionInQuizList()) {
+                if(questionInQuiz.getCountStudentQuestionJoined() > 0){
+                    questionInQuiz.setStatusId(2);
+                } else {
+                    questionInQuiz.setStagingQuizzes(null);
+                    questionInQuizToRemove.add(questionInQuiz);
+                }
             }
-            addedStagingQuizzes.getQuestionInQuizList().clear();
+            List<Question> questionsToRemove = new ArrayList<>();
+            for (QuestionInQuiz questionInQuiz: questionInQuizToRemove) {
+                if(questionInQuiz.getCountQuestionInAnotherQuiz() == 0){
+                    questionsToRemove.add(questionInQuiz.getQuestion());
+                }
+                addedStagingQuizzes.getQuestionInQuizList().remove(questionInQuiz);
+            }
+            questionInQuizService.saveAll(addedStagingQuizzes.getQuestionInQuizList());
             for (Question question : questionRequest.getQuestions()) {
                 for (Answer answer : question.getAnswerList()) {
                     answer.setQuestion(question);
@@ -96,6 +118,9 @@ public class QuestionController {
                 addedStagingQuizzes.getQuestionInQuizList().add(new QuestionInQuiz(addedStagingQuizzes, question));
             }
             questionService.saveAll(questionRequest.getQuestions());
+            for (Question question: questionsToRemove) {
+                questionService.delete(question);
+            }
             stagingQuizzesService.save(addedStagingQuizzes);
             return ResponseEntity.ok(addedStagingQuizzes.getQuestionInQuizList());
         }

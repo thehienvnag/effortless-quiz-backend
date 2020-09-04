@@ -33,7 +33,7 @@ public class StudentAttempt implements Serializable {
     @Column(name = "users_id", nullable = false)
     private Integer usersId;
 
-    @Column(name="staging_quizzes_id", nullable = true, insertable = false, updatable = false)
+    @Column(name = "staging_quizzes_id", nullable = true, insertable = false, updatable = false)
     private Long stagingQuizzesId;
 
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -47,6 +47,9 @@ public class StudentAttempt implements Serializable {
 
     @Formula("(SELECT st.description FROM staging_quizzes st WHERE st.id = staging_quizzes_id)")
     private String description;
+
+    @Formula("(SELECT u.name FROM users u WHERE u.id = users_id)")
+    private String nameOfUser;
 
     @Formula("(SELECT q.quiz_code FROM quizes q " +
             "WHERE q.id = (SELECT sq.quizes_id FROM staging_quizzes sq WHERE sq.id = staging_quizzes_id))")
@@ -69,6 +72,37 @@ public class StudentAttempt implements Serializable {
     @Column(name = "status_id")
     private Integer statusId;
 
+    @Formula("(SELECT COUNT(sq.id) FROM student_question sq WHERE sq.student_attempt_id = id)")
+    private Integer questionCount;
+
+    @Column(name = "point_earned", nullable = true)
+    private Double pointsEarned;
+
+    @Column(name = "quiz_grade", nullable = true)
+    private Double quizGrade;
+
+    @Formula("(SELECT sq.reviewable FROM staging_quizzes sq WHERE sq.id = staging_quizzes_id)")
+    private Boolean reviewable;
+
+    @Transient
+    private String quizInfo;
+
+    public String getQuizInfo(){
+        return this.quizCode + " - " + this.description;
+    }
+
+    public Boolean isNotExpired() {
+        if(startTime == null) return true;
+        return duration * 60 * 1000 - (System.currentTimeMillis() - startTime.getTime()) > 0;
+    }
+
+    public Integer getRemainingTime() {
+        double timeOver = (double) System.currentTimeMillis() - startTime.getTime();
+        double remaining = duration * 60 * 1000 - timeOver;
+        double remainingTime = Math.ceil(remaining / 1000);
+        return (int) remainingTime;
+    }
+
     public StudentAttempt() {
     }
 
@@ -77,7 +111,7 @@ public class StudentAttempt implements Serializable {
         this.stagingQuizzes = stagingQuizzes;
         this.importDate = new Timestamp(System.currentTimeMillis());
         this.studentQuestionList = new ArrayList<>();
-        this.statusId = 1;
+        this.statusId = 7;
     }
 
 }

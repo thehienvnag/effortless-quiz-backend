@@ -61,6 +61,9 @@ public class StagingQuizzes implements Serializable {
     @Column(name="quizes_id", insertable = false, updatable = false)
     private Integer quizId;
 
+    @Column(name = "reviewable", nullable = true)
+    private Boolean reviewable;
+
     @Formula("(SELECT q.quiz_code FROM quizes q WHERE q.id = quizes_id)")
     private String quizCode;
 

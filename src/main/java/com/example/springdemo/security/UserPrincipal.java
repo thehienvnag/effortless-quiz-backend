@@ -1,6 +1,5 @@
 package com.example.springdemo.security;
 
-import com.example.springdemo.model.student.Student;
 import com.example.springdemo.model.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;

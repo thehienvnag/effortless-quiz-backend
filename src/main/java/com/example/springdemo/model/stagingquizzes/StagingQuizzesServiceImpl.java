@@ -22,8 +22,8 @@ public class StagingQuizzesServiceImpl implements StagingQuizzesService {
     }
 
     @Override
-    public Optional<StagingQuizzes> findByQuizesIdAndStatusId(Integer quizesId, Integer statusId) {
-        return stagingQuizzesRepository.findByQuizIdAndStatusId(quizesId, statusId);
+    public Optional<StagingQuizzes> findByQuizesIdAndStatusIdAndUserId(Integer quizesId, Integer statusId, Integer userId) {
+        return stagingQuizzesRepository.findByQuizIdAndStatusIdAndUserId(quizesId, statusId, userId.longValue());
     }
 
     @Override
@@ -34,6 +34,11 @@ public class StagingQuizzesServiceImpl implements StagingQuizzesService {
     @Override
     public Page<StagingQuizzes> findByQuizId(Integer quizId, Pageable pageable) {
         return stagingQuizzesRepository.findByQuizId(quizId, pageable);
+    }
+
+    @Override
+    public Page<StagingQuizzes> findByQuizIdAndUserId(Integer quizId, Long userId, Pageable pageable) {
+        return stagingQuizzesRepository.findByQuizIdAndUserId(quizId, userId, pageable);
     }
 
     @Override

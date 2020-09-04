@@ -46,6 +46,9 @@ public class Quizzes implements Serializable {
     @Column(name = "import_date", nullable = false)
     private Timestamp importDate;
 
+    @Column(name = "status_id")
+    private Integer statusId;
+
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "users_id", referencedColumnName = "id", insertable = false, updatable = false)
@@ -69,34 +72,8 @@ public class Quizzes implements Serializable {
             ")")
     private Integer countQuestionInQuiz;
 
+    @Formula("(SELECT s.name FROM status s WHERE s.id = status_id)")
+    private String statusName;
 
-//    @Transient
-//    private String subjectName;
-//
-//    public String getSubjectName() {
-//        return subjects.getName();
-//    }
-//
-//    @Transient
-//    private String subjectCode;
-//
-//    public String getSubjectCode() {
-//        return subjects.getCode();
-//    }
-//
-//
-//    @Transient
-//    private String subjectId;
-//
-//    public Long getSubjectId() {
-//        return subjects.getId();
-//    }
-//
-//    @Transient
-//    private String subjectDisplay;
-//
-//    public String getSubjectDisplay() {
-//        return subjectCode + " - " + subjectName;
-//    }
 
 }
