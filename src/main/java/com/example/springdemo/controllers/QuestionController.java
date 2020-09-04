@@ -53,6 +53,7 @@ public class QuestionController {
     private QuizzesService quizzesService;
 
 
+    @RolesAllowed("ROLE_TEACHER")
     @PostMapping("/uploadFile")
     public ResponseEntity uploadFile(@RequestParam("file") MultipartFile file){
         URI uri = fileService.uploadFileAzure(file);
