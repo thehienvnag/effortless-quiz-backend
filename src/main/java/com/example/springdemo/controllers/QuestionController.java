@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,8 +32,8 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:8081")
-//@CrossOrigin(origins = "https://effortless-quiz.herokuapp.com")
+//@CrossOrigin(origins = "http://localhost:8081")
+@CrossOrigin(origins = "https://effortless-quiz.herokuapp.com")
 public class QuestionController {
 
     @Autowired
@@ -50,6 +51,7 @@ public class QuestionController {
     @Autowired
     private QuizzesService quizzesService;
 
+    @RolesAllowed("ROLE_TEACHER")
     @PostMapping("/uploadFile")
     public ResponseEntity uploadFile(@RequestParam("file") MultipartFile file) {
 
@@ -81,6 +83,7 @@ public class QuestionController {
                 .body(resource);
     }
 
+    @RolesAllowed("ROLE_TEACHER")
     @PostMapping("/users/{userId}/quizzes/{id}/questions")
     public ResponseEntity saveQuestions(
             @PathVariable Integer userId,
