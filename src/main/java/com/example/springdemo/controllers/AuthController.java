@@ -131,11 +131,7 @@ public class AuthController {
         try {
             userService.saveUser(user);
         } catch (Exception e) {
-            String msg = e.getMessage();
-            logger.error(msg);
-            if (msg.contains("unique_user_Username")) {
-                return ResponseEntity.badRequest().body("Username already exists!");
-            }
+            return ResponseEntity.badRequest().body("Username already exists!");
         }
         return ResponseEntity.ok(user);
     }
@@ -147,7 +143,7 @@ public class AuthController {
         if (user == null) {
             return ResponseEntity.badRequest().body("User id specified does not exist!");
         }
-        if(user.getUserRoles().size() > 0){
+        if (user.getUserRoles().size() > 0) {
             return ResponseEntity.badRequest().body("Invalid request!");
         }
         List<UserRole> userRoles = new ArrayList<>();
