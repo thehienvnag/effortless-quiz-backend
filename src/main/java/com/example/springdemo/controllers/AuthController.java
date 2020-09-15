@@ -27,8 +27,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
-//@CrossOrigin(origins = "http://localhost:8081")
-@CrossOrigin(origins = "https://effortless-quiz.herokuapp.com")
+@CrossOrigin(origins = "http://localhost:8081")
+//@CrossOrigin(origins = "https://effortless-quiz.herokuapp.com")
 public class AuthController {
 
     Logger logger = LoggerFactory.getLogger(AuthController.class);
@@ -58,13 +58,15 @@ public class AuthController {
                 )
         );
         //SecurityContextHolder.getContext().setAuthentication(authentication);
-        String accessToken = tokenProvider.generateAccessToken(auth);
-        String refreshToken = tokenProvider.generateRefreshToken(auth);
+
+
         Integer userId = ((UserPrincipal) auth.getPrincipal()).getId();
         User userFound = userService.findUser(userId).orElse(null);
         if (userFound == null) {
             return new ResponseEntity("Incorrect username or password!!", HttpStatus.UNAUTHORIZED);
         }
+        String accessToken = tokenProvider.generateAccessToken(auth);
+        String refreshToken = tokenProvider.generateRefreshToken(auth);
         userFound.setRefreshToken(refreshToken);
         userService.saveUser(userFound);
         return ResponseEntity.ok(
@@ -126,7 +128,6 @@ public class AuthController {
         String name = registerRequest.getName();
         String roleId = registerRequest.getRoleId();
         User user = new User(username, password, name, roleId);
-
         try {
             userService.saveUser(user);
         } catch (Exception e) {

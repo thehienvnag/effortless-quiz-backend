@@ -2,6 +2,7 @@ package com.example.springdemo.model.stagingquizzes;
 
 import com.example.springdemo.model.questioninquiz.QuestionInQuiz;
 import com.example.springdemo.model.quizes.Quizzes;
+import com.example.springdemo.model.studentattempt.StudentAttempt;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -75,6 +76,10 @@ public class StagingQuizzes implements Serializable {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @OneToMany(mappedBy = "stagingQuizzes", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<QuestionInQuiz> questionInQuizList;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @OneToMany(mappedBy = "stagingQuizzes", fetch = FetchType.LAZY)
+    private List<StudentAttempt> studentAttemptList;
 
     public StagingQuizzes(Integer statusId, Quizzes quiz) {
         this.statusId = statusId;

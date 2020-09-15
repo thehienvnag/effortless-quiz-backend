@@ -33,7 +33,7 @@ public class UserRole implements Serializable {
     private User user;
 
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "roleid", referencedColumnName = "Id")
     private Role role;
 

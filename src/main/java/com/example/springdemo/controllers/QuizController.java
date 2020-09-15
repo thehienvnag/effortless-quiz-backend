@@ -16,17 +16,25 @@ import com.example.springdemo.model.studentquestion.StudentQuestion;
 import com.example.springdemo.model.studentquestion.StudentQuestionService;
 import com.example.springdemo.security.UserPrincipal;
 import com.example.springdemo.service.AsyncService;
+import com.example.springdemo.service.FileService;
 import com.example.springdemo.util.PageableWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.security.Principal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -37,8 +45,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
-//@CrossOrigin(origins = "http://localhost:8081")
-@CrossOrigin(origins = "https://effortless-quiz.herokuapp.com")
+@CrossOrigin(origins = "http://localhost:8081")
+//@CrossOrigin(origins = "https://effortless-quiz.herokuapp.com")
 public class QuizController {
     @Autowired
     private QuizzesService quizzesService;
@@ -57,6 +65,9 @@ public class QuizController {
 
     @Autowired
     private AsyncService asyncService;
+
+    @Autowired
+    private FileService fileService;
 
     @Value("${app.stagingStatusId}")
     private int stagingStatusId;
@@ -461,18 +472,34 @@ public class QuizController {
             @PathVariable Long userId,
             @PathVariable Long stagingQuizzesId,
             Authentication authentication,
-            PageableWrapper pageableWrapper
-    ){
+            PageableWrapper pageableWrapper,
+            @RequestParam(required = false) Boolean isExportExcel,
+            @RequestHeader HttpHeaders headers
+    ) {
         Integer userIdAuth = ((UserPrincipal) authentication.getPrincipal()).getId();
-        if(userIdAuth != userId.intValue()){
+        if (userIdAuth != userId.intValue()) {
             return new ResponseEntity("You are not allowed to access this resource!", HttpStatus.FORBIDDEN);
         }
         StagingQuizzes stagingQuizzes = stagingQuizzesService.findOne(stagingQuizzesId).orElse(null);
-        if(stagingQuizzes != null && stagingQuizzes.getQuiz().getUsersId() == userId) {
+        if (isExportExcel != null && isExportExcel) {
+            List<StudentAttempt> studentAttemptList = stagingQuizzes.getStudentAttemptList();
+            if (studentAttemptList.size() > 0) {
+
+                String responseFileBase64 = fileService.exportExcelFile(studentAttemptList);
+                headers.setContentType(MediaType.TEXT_PLAIN);
+                return new ResponseEntity<>(responseFileBase64, headers, HttpStatus.OK);
+
+            } else {
+                return ResponseEntity.noContent().build();
+            }
+        }
+        if (stagingQuizzes != null && stagingQuizzes.getQuiz().getUsersId() == userId) {
             Pageable pageable = pageableWrapper.getPageable();
-            Page<StudentAttempt> studentAttemptPage = studentAttemptService.findByStagingQuizzesId(stagingQuizzes.getId(), pageable);
-            if(!studentAttemptPage.isEmpty()){
-                studentAttemptPage.stream().forEach(studentAttempt -> {studentAttempt.setStudentQuestionList(null);});
+            Page<StudentAttempt> studentAttemptPage = studentAttemptService.findByStagingQuizzesId(stagingQuizzesId, pageable);
+            if (!studentAttemptPage.isEmpty()) {
+                studentAttemptPage.stream().forEach(studentAttempt -> {
+                    studentAttempt.setStudentQuestionList(null);
+                });
                 return ResponseEntity.ok(studentAttemptPage);
             }
         }
